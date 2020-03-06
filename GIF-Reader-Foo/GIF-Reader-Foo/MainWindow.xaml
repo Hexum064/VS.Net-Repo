@@ -11,6 +11,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
@@ -24,5 +27,7 @@
             <Button x:Name="OpenButton" Grid.Column="2" Margin="4" Click="OpenButton_Click">Open</Button>
         </Grid>
         <Image x:Name="displayImage" Width="32" Height="32" Grid.Row="3"/>
+        <TextBox x:Name="lzwCodeTextBlock" HorizontalAlignment="Stretch" Margin="4" Grid.Row="4" Background="AliceBlue"/>
+        <Button x:Name="lzwCodeButton" Width="100" Grid.Row="5" Height="20" Margin="346,0" VerticalAlignment="Top" Click="LzwCodeButton_Click">Decode</Button>
     </Grid>
 </Window>
