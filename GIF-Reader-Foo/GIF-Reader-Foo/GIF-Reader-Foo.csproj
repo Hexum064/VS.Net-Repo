@@ -56,6 +56,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ColorTable.cs" />
+    <Compile Include="GifData.cs" />
+    <Compile Include="GifDataReader.cs" />
+    <Compile Include="GraphicsControlExtension.cs" />
+    <Compile Include="ImageData.cs" />
+    <Compile Include="ImageDescriptorBlock.cs" />
+    <Compile Include="ImageLzwData.cs" />
+    <Compile Include="RgbColor.cs" />
+    <Compile Include="ScreenDescriptor.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -64,6 +73,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CodeTable.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="GifHeader.cs" />
+    <Compile Include="GifLzwDecoding.cs" />
+    <Compile Include="LzwCodeBytes.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
