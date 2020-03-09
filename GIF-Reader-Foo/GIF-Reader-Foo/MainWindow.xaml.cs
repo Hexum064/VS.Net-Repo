@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace GIF_Reader_Foo
 
 
 
- 
+
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -30,88 +31,80 @@ namespace GIF_Reader_Foo
     public partial class MainWindow : Window
     {
 
-
+        GifRunner _gifRunner = null;
+        GifData _gifData = null;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            pathText.Text = @"M:\My Documents\VS.Net-Repo\GIF-Reader-Foo\giphy.gif";
-            //pathText.Text = @"..\..\..\giphy.gif";
-            pathText.Text = @"..\..\..\light.gif";
+           
+            pathText.Text = @"..\..\..\sheep.gif";
+            //pathText.Text = @"..\..\..\light.gif";
             //pathText.Text = @"C:\Users\Owner\Documents\Visual Studio 2019\Projects\GIF-Reader-Foo\giphy.gif";
         }
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_gifRunner?.IsRunning == true)
+            {
+                _gifRunner.Stop();
+            }
 
             RunLoadGIF();
         }
 
         private async void RunLoadGIF()
         {
-            displayImage.Source =  await LoadGIFAsync(pathText.Text);
+            GifDataReader gifReader = new GifDataReader(pathText.Text);
+            _gifData = await gifReader.LoadGifAsync();
+            _gifRunner = new GifRunner(_gifData);
+            _gifRunner.ImageDataReady += GifRunner_ImageDataReady;
 
-            PixelFormat pf = PixelFormats.Bgr24;
-            int rawStride = (_screenDescriptor.Width * pf.BitsPerPixel + 7) / 8;
-            byte[] rawImage = new byte[rawStride * _screenDescriptor.Height];
-            DecodeData(images, rawImage);
+            _gifRunner.Start();
 
-            BitmapSource bmp = BitmapSource.Create(_screenDescriptor.Width, _screenDescriptor.Height, 96, 96, pf, null, rawImage, rawStride);
-            return bmp;
+            //PixelFormat pf = PixelFormats.Bgr24;
+            //int rawStride = (gifData.ScreenDescriptor.Width * pf.BitsPerPixel + 7) / 8;
+            //byte[] rawImage = new byte[rawStride * gifData.ScreenDescriptor.Height];
+            //DecodeData(gifData.Images, rawImage, gifData);
+
+            //displayImage.Source = BitmapSource.Create(gifData.ScreenDescriptor.Width, gifData.ScreenDescriptor.Height, 96, 96, pf, null, rawImage, rawStride);
+
+
         }
 
-    
-
-
-
-
-        private void DecodeData(List<ImageData> images, byte[] rawImage)
+        private void GifRunner_ImageDataReady(object sender, ImageReadyEventArgs e)
         {
-            foreach (ImageData imageData in images)
-            {
-
-                Console.WriteLine();
-                byte[] bytes;
-                GifLzwDecoding encoding = new GifLzwDecoding(imageData.RawImageData.lzwMinCodeSize);
-                bytes = encoding.DecodeLzwGifData(new LzwCodeBytes(imageData.RawImageData.LzwBytes.First())).ToArray();
-                DrawImage(bytes, rawImage, 0, imageData.DescriptorBlock);
-                return;
-            }
+            //Console.WriteLine(e.RgbImageData.Length);
+            DrawToScreen(e.RgbImageData);
         }
 
-        private void DrawImage(byte[] bytes, byte[] destBytes, int startingIndex, ImageDescriptorBlock descriptorBlock)
+        private void DrawToScreen(IEnumerable<RgbColor> rgbData)
         {
-            int imageXYOffset = descriptorBlock.Y * _screenDescriptor.Width + descriptorBlock.X;
+            PixelFormat pf = PixelFormats.Bgra32;
+            int rawStride = (_gifData.ScreenDescriptor.Width * pf.BitsPerPixel + 7) / 8;
+            byte[] rawImage = new byte[rawStride * _gifData.ScreenDescriptor.Height];
 
-            for (int i = 0; i < bytes.Length && i < _screenDescriptor.Width * _screenDescriptor.Height; i++)
-            {
-                Console.Write($"{bytes[i].ToString("000")}");
-                if ((i + 1) % _screenDescriptor.Width == 0)
+            int i = 0;
+
+            rgbData
+                .ToList()
+                .ForEach((rgb) =>
                 {
-                    Console.WriteLine();
-                }
-                destBytes[i * 3] = _globalColorTable.Colors[bytes[i]].Blue;
-                destBytes[i * 3 + 1] = _globalColorTable.Colors[bytes[i]].Green;
-                destBytes[i * 3 + 2] = _globalColorTable.Colors[bytes[i]].Red;
+                    rawImage[i++] = rgb.Blue;
+                    rawImage[i++] = rgb.Green;
+                    rawImage[i++] = rgb.Red;
+                    rawImage[i++] = (byte)(rgb.Transparent ? 0 : 255);
+                });
+            try
+            {
+                Dispatcher.Invoke(() => displayImage.Source = BitmapSource.Create(_gifData.ScreenDescriptor.Width, _gifData.ScreenDescriptor.Height, 96, 96, pf, null, rawImage, rawStride));
             }
-            Console.WriteLine();
-            //for (int y = 0; y < _screenDescriptor.Height; y++)
-            //{
-            //    for (int x = 0; x < _screenDescriptor.Width; x++)
-            //    {
-            //        if (y * _screenDescriptor.Width + x >= bytes.Length)
-            //        {
-            //            return;
-            //        }
+            catch
+            {
 
-            //        Console.WriteLine(_globalColorTable.Colors[bytes[y * _screenDescriptor.Width + x]]);
-
-            //    }
-            //}
+            }
         }
-
-     
 
         private void LzwCodeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -121,10 +114,11 @@ namespace GIF_Reader_Foo
             }
 
             byte[] bytes = GetBytesFromHexString(lzwCodeTextBlock.Text);
-            byte minCodeSize = bytes[0];
+            LzwCodeBytes codeBytes = new LzwCodeBytes(bytes.Skip(1)) { BitsPerCode = bytes[0] };
+            
 
-            GifLzwDecoding lzw = new GifLzwDecoding(minCodeSize);
-            List<byte> imageBytes = lzw.DecodeLzwGifData(new LzwCodeBytes(bytes.Skip(2)));
+            GifLzwDecoding lzw = new GifLzwDecoding(bytes[0]);
+            List<byte> imageBytes = lzw.DecodeLzwGifData(codeBytes);
 
             //HARDCODED SIZE
 
@@ -134,15 +128,15 @@ namespace GIF_Reader_Foo
             {
                 if (i % 11 == 0)
                 {
-                    Console.WriteLine();
+                    Debug.WriteLine("");
                 }
 
-                Console.Write($"{imageBytes[i].ToString("000")} ");
+                Debug.Write($"{imageBytes[i].ToString("000")} ");
 
                 i++;
             });
 
-            Console.WriteLine();
+            Debug.WriteLine("");
         }
 
 

@@ -15,6 +15,11 @@ namespace GIF_Reader_Foo
 
         private ushort _clearCode;
         private ushort _eodCode;
+        List<byte> _prevData = null;
+        ushort _prevCode = 0;
+        List<byte> _data = null;
+        byte _prevByte = 0;
+        ushort _code = 0;
 
         public GifLzwDecoding(byte minCodeSize)
         {
@@ -38,76 +43,83 @@ namespace GIF_Reader_Foo
         }
 
         //This method does not expect the first byte to contain the minimum code size. 
-        public List<byte> DecodeLzwGifData(LzwCodeBytes codes)
+        public List<byte> DecodeLzwGifData(LzwCodeBytes codeBytes)
         {
-      
-            List<byte> output = new List<byte>();
-            List<byte> prevData = null;
-            ushort prevCode = 0;
-            List<byte> data = null;
-            byte prevByte = 0;
-            ushort code = 0;
 
-            ResetCodeTableAndCodeSize(codes); //Initializing the code table and codes size
+            //First make a copy so we are not modifying an object from outside of this class unintentionally
+            LzwCodeBytes codes = codeBytes.Clone();
+            List<byte> output = new List<byte>();
+
+            //Ensuring that the bits per code has been set correctly
+            codes.BitsPerCode = _codeTable.BitsPerCode;
+  
 
             while (!codes.IsAtEnd)
             {
+
                 //set CODE-1
-                prevCode = code;
+                _prevCode = _code;
                 //get CODE
-                code = codes.GetNextCode();
+                _code = codes.GetNextCode();
 
 
-                if (code == _clearCode)
+                if (_code == _clearCode)
                 {
-                    ResetCodeTableAndCodeSize(codes);
 
-                    code = codes.GetNextCode();
-                    data = _codeTable.GetEntry(code);
-                    output.AddRange(data); 
+                    _codeTable.Reset(MinCodeSize);
+                    codes.BitsPerCode = _codeTable.BitsPerCode;
+
+                    _code = codes.GetNextCode();
+                    _data = _codeTable.GetEntry(_code);
+                    output.AddRange(_data);
 
                     continue;
                 }
 
-                if (code == _eodCode)
+                if (_code == _eodCode)
                 {
                     break;
                 }
 
                 //get {CODE}
-                data = _codeTable.GetEntry(code);
+                _data = _codeTable.GetEntry(_code);
 
                 //get {CODE-1}
-                prevData = _codeTable.GetEntry(prevCode);
+                _prevData = _codeTable.GetEntry(_prevCode);
 
                 //Code is not in table so just use the prevData as data
-                if (data.Count == 0) 
+                if (_data.Count == 0) 
                 {
-                    data = prevData;
+                    _data = _prevData;
                 }
 
-                prevByte = data.First();
-                //create {CODE-1} + K
-                prevData.Add(prevByte);
 
+                if (_data.Count > 0)
+                _prevByte = _data.First();
+                //create {CODE-1} + K
+                _prevData.Add(_prevByte);
+
+                //Note: If _code didn't exist in the table, therefore _data.Count == 0, we set _data = _prevData meaning they reference the same thing, so changing _prevData is the same as changing _data
                 //output {CODE}
-                output.AddRange(data);
+                output.AddRange(_data);
 
        
-                _codeTable.AddEntry(prevData);
+                _codeTable.AddEntry(_prevData);
                 //Need to update the BitsPerCode here because the number may have changed after adding the last code table entry
                 codes.BitsPerCode = _codeTable.BitsPerCode;
+
+                if (_codeTable.BitsPerCode > 12)
+                {
+                    _codeTable.Reset(MinCodeSize);
+                    codes.BitsPerCode = _codeTable.BitsPerCode;
+                }
 
             }
 
             return output;
         }
 
-        private void ResetCodeTableAndCodeSize(LzwCodeBytes codes)
-        {
-            _codeTable.Reset(MinCodeSize);
-            codes.BitsPerCode = _codeTable.BitsPerCode;
-        }
+
 
     }
     

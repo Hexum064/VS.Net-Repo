@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,38 +20,39 @@ namespace GIF_Reader_Foo
         private const byte COMMENT_EXTENSION = 0xFE;
         private const byte TRAILER_BYTE = 0x3B;
 
-        private GifHeader _header;
-        private ScreenDescriptor _screenDescriptor;
-        private ColorTable _globalColorTable;
+        public GifDataReader(string path)
+        {
+            GifPath = path;
+        }
 
-        public async Task<GifData> LoadGIFAsync(string path)
+
+        public Task<GifData> LoadGifAsync()
         {
             return Task.Run(() =>
             {
                 GifData gifData = new GifData();
-                bool readingData = true;
-                byte[] block;
-                List<ImageData> images = new List<ImageData>();
+                bool readingData = true;               
                 ImageData imageData = null;
 
+                Debug.WriteLine($"Loading from {GifPath}");
 
-
-                Console.WriteLine($"Loading from {path}");
-
-                using (FileStream reader = File.OpenRead(path))
+                using (FileStream reader = File.OpenRead(GifPath))
                 {
-                    _header = LoadHeaderAsync(reader);
-                    _screenDescriptor = LoadScreenDescriptorAsync(reader);
-                    _globalColorTable = LoadColorTable(reader, _screenDescriptor.GlobalColorTableSize);
+                    gifData.Header = LoadHeader(reader);
+                    gifData.ScreenDescriptor = LoadScreenDescriptor(reader);
+
+                    if (gifData.ScreenDescriptor.GlobalColorTableFlag)
+                    {
+                        gifData.GlobalColorTable = LoadColorTable(reader, gifData.ScreenDescriptor.GlobalColorTableSize);
+                    }
 
                     while (readingData)
                     {
 
 
-                        Console.WriteLine("Pos: " + reader.Position.ToString("X8"));
+                        Debug.WriteLine("Pos: " + reader.Position.ToString("X8"));
                         byte blockType = (byte)reader.ReadByte();
-                        //block = await GetNextBlock(reader);
-
+                        
                         switch (blockType)
                         {
                             case EXT_INTRO:
@@ -99,11 +101,11 @@ namespace GIF_Reader_Foo
                                 }
 
                                 imageData.RawImageData = GetRawImageData(reader);
-                                images.Add(imageData);
+                                gifData.Images.Add(imageData);
                                 imageData = null;
                                 break;
                             case TRAILER_BYTE:
-                                Console.WriteLine($"Done loading images. Image count: {images.Count}");
+                                Debug.WriteLine($"Done loading images. Image count: {gifData.Images.Count}");
                                 readingData = false;
                                 break;
                         }
@@ -116,13 +118,12 @@ namespace GIF_Reader_Foo
 
             });
 
-
-
-
         }
 
+        public string GifPath { get; private set; }
 
-        private GifHeader LoadHeaderAsync(FileStream reader)
+
+        private GifHeader LoadHeader(FileStream reader)
         {
          
             GifHeader header = new GifHeader();
@@ -141,14 +142,14 @@ namespace GIF_Reader_Foo
                 header.Version[i] = buff[i + 3];
             }
 
-            Console.WriteLine(header.ToString());
+            Debug.WriteLine(header.ToString());
 
             return header;
           
         }
 
 
-        private ScreenDescriptor LoadScreenDescriptorAsync(FileStream reader)
+        private ScreenDescriptor LoadScreenDescriptor(FileStream reader)
         {
         
             ScreenDescriptor screenDescriptor = new ScreenDescriptor();
@@ -166,7 +167,7 @@ namespace GIF_Reader_Foo
             screenDescriptor.BackgroundColorIndex = buff[5];
             screenDescriptor.PixelAspectRatio = buff[6];
 
-            Console.WriteLine(screenDescriptor.ToString());
+            Debug.WriteLine(screenDescriptor.ToString());
 
             return screenDescriptor;
     
@@ -193,11 +194,11 @@ namespace GIF_Reader_Foo
             block.Width = buff.GetUWord(4);
             block.Height = buff.GetUWord(6);
             block.LocalColorTableFlag = (buff[8] & 0x80) != 0;
-            block.LocalColorTableFlag = (buff[8] & 0x40) != 0;
-            block.LocalColorTableFlag = (buff[8] & 0x20) != 0;
+            block.InterlacedFlag = (buff[8] & 0x40) != 0;
+            block.SortedFlag = (buff[8] & 0x20) != 0;
             block.ColorTableSize = (ushort)Math.Pow(2, (buff[8] & 0x07) + 1);
 
-            Console.WriteLine(block.ToString());
+            Debug.WriteLine(block.ToString());
 
             return block;
        
@@ -220,7 +221,7 @@ namespace GIF_Reader_Foo
             extension.TransparentColorIndex = buff[3];
             reader.Position++; //Skip the termination byte
 
-            Console.WriteLine(extension.ToString());
+            Debug.WriteLine(extension.ToString());
             return extension;
         
         }
@@ -258,28 +259,30 @@ namespace GIF_Reader_Foo
 
         private ImageLzwData GetRawImageData(FileStream reader)
         {
-           
+            Debug.WriteLine("Pos: " + reader.Position.ToString("X8"));
             ImageLzwData lzwData = new ImageLzwData();
-            lzwData.lzwMinCodeSize = (byte)reader.ReadByte();
+            lzwData.MinCodeSize = (byte)reader.ReadByte();
+            List<byte> bytes = new List<byte>();
 
             while (true)
             {
                 int len = reader.ReadByte();
-                byte[] buff;
-
-                if (len == 0)
+                
+                if (len <= 0)
                 {
                     break;
-
                 }
 
-                buff = new byte[len];
+                byte[] buff = new byte[len];
                 reader.Read(buff, 0, len);
-                lzwData.LzwBytes.Add(buff);
-                Console.WriteLine($"Added buff #{lzwData.LzwBytes.Count} of size {len}");
+                bytes.AddRange(buff);
+                //Debug.WriteLine($"Added buff of size {len}");
+
             }
 
-            Console.WriteLine("Done");
+            lzwData.ImageSubBlocks = new LzwCodeBytes(bytes);
+
+            Debug.WriteLine("Done");
 
             return lzwData;
          

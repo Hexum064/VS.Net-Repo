@@ -8,9 +8,10 @@ namespace GIF_Reader_Foo
 {
     public class RgbColor
     {
-        public byte Red;
-        public byte Green;
-        public byte Blue;
+        public byte Red { get; set; }
+        public byte Green { get; set; }
+        public byte Blue { get; set; }
+        public bool Transparent { get; set; }
 
         public override string ToString()
         {

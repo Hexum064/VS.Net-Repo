@@ -8,12 +8,12 @@ namespace GIF_Reader_Foo
 {
     public class GraphicsControlExtension
     {
-        public byte BlockSize;
-        public byte DisposalMethod;
-        public bool UserInputFlag;
-        public bool TransparentColorFlag;
-        public ushort DelayTime;
-        public byte TransparentColorIndex;
+        public byte BlockSize { get; set; }
+        public byte DisposalMethod { get; set; }
+        public bool UserInputFlag { get; set; }
+        public bool TransparentColorFlag { get; set; }
+        public ushort DelayTime { get; set; }
+        public byte TransparentColorIndex { get; set; }
 
         public override string ToString()
         {

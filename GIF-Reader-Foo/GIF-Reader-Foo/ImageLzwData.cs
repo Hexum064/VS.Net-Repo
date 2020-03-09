@@ -9,7 +9,7 @@ namespace GIF_Reader_Foo
 
     public class ImageLzwData
     {
-        public byte lzwMinCodeSize;
-        public List<byte[]> LzwBytes = new List<byte[]>();
+        public byte MinCodeSize { get; set; }
+        public LzwCodeBytes ImageSubBlocks { get; set; }
     }
 }

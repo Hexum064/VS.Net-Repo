@@ -8,8 +8,8 @@ namespace GIF_Reader_Foo
 {
     public class GifHeader
     {
-        public byte[] Name = new byte[3];
-        public byte[] Version = new byte[3];
+        public byte[] Name { get; private set; } = new byte[3];
+        public byte[] Version { get; private set; } = new byte[3];
 
         public override string ToString()
         {

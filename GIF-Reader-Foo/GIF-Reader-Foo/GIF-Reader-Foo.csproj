@@ -59,10 +59,12 @@
     <Compile Include="ColorTable.cs" />
     <Compile Include="GifData.cs" />
     <Compile Include="GifDataReader.cs" />
+    <Compile Include="GifRunner.cs" />
     <Compile Include="GraphicsControlExtension.cs" />
     <Compile Include="ImageData.cs" />
     <Compile Include="ImageDescriptorBlock.cs" />
     <Compile Include="ImageLzwData.cs" />
+    <Compile Include="ImageReadyEventHandler.cs" />
     <Compile Include="RgbColor.cs" />
     <Compile Include="ScreenDescriptor.cs" />
     <Page Include="MainWindow.xaml">

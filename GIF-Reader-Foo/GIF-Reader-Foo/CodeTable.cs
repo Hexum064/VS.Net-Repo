@@ -10,12 +10,11 @@ namespace GIF_Reader_Foo
     {
         private ushort _baseTableSize = 0;
         private List<List<byte>> _table = new List<List<byte>>();
+
         public CodeTable()
         {
       
         }
-
-
 
         public byte BitsPerCode
         {

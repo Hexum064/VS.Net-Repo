@@ -8,9 +8,9 @@ namespace GIF_Reader_Foo
 {
     public class ImageData
     {
-        public ImageLzwData RawImageData;
-        public ImageDescriptorBlock DescriptorBlock;
-        public ColorTable LocalColorTable;
-        public GraphicsControlExtension GraphicsExtention;
+        public ImageLzwData RawImageData { get; set; }
+        public ImageDescriptorBlock DescriptorBlock { get; set; }
+        public ColorTable LocalColorTable { get; set; }
+        public GraphicsControlExtension GraphicsExtention { get; set; }
     }
 }

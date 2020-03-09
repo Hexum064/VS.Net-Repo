@@ -8,6 +8,6 @@ namespace GIF_Reader_Foo
 {
     public class ColorTable
     {
-        public RgbColor[] Colors;
+        public RgbColor[] Colors { get; set; }
     }
 }

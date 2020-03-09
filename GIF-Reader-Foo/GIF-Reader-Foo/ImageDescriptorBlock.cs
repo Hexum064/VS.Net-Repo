@@ -8,14 +8,14 @@ namespace GIF_Reader_Foo
 {
     public class ImageDescriptorBlock
     {
-        public ushort X;
-        public ushort Y;
-        public ushort Width;
-        public ushort Height;
-        public bool LocalColorTableFlag;
-        public bool InterlacedFlag;
-        public bool SortedFlag;
-        public ushort ColorTableSize;
+        public ushort X { get; set; }
+        public ushort Y { get; set; }
+        public ushort Width { get; set; }
+        public ushort Height { get; set; }
+        public bool LocalColorTableFlag { get; set; }
+        public bool InterlacedFlag { get; set; }
+        public bool SortedFlag { get; set; }
+        public ushort ColorTableSize { get; set; }
 
         public override string ToString()
         {
