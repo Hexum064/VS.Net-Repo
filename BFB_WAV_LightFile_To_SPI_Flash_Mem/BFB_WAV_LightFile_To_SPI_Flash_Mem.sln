@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.779
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BFB_WAV_LightFile_To_SPI_Flash_Mem", "BFB_WAV_LightFile_To_SPI_Flash_Mem\BFB_WAV_LightFile_To_SPI_Flash_Mem.csproj", "{4A8C48FB-8DA2-40B9-84FA-7C9D65F657FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4A8C48FB-8DA2-40B9-84FA-7C9D65F657FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A8C48FB-8DA2-40B9-84FA-7C9D65F657FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A8C48FB-8DA2-40B9-84FA-7C9D65F657FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A8C48FB-8DA2-40B9-84FA-7C9D65F657FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D130108-398F-4C3F-911C-B39FA2CFAF87}
+	EndGlobalSection
+EndGlobal
