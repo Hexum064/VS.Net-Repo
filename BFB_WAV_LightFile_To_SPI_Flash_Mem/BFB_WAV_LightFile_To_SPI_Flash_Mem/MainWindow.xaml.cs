@@ -27,17 +27,22 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             InitializeComponent();
 
             //TEST
-            SerialPort serialPort = new SerialPort("com3");
-            serialPort.BaudRate = 115200;
-            serialPort.Parity = Parity.None;
-            serialPort.StopBits = StopBits.One;
-            serialPort.DataBits = 8;
-            serialPort.Handshake = Handshake.None;
-            IMemApi memApi = new BusPirateMemApi(serialPort);
-            Closing += (o, e) => memApi.Dispose();
-            memApi.StatusUpdateCallback((m) => Debug.WriteLine(m));
-            memApi.InitMem();
-            memApi.ReadSignature();
+            //SerialPort serialPort = new SerialPort("com3");
+            //serialPort.BaudRate = 115200;
+            //serialPort.Parity = Parity.None;
+            //serialPort.StopBits = StopBits.One;
+            //serialPort.DataBits = 8;
+            //serialPort.Handshake = Handshake.None;
+            //IMemApi memApi = new BusPirateMemApi(serialPort);
+            //Closing += (o, e) => memApi.Dispose();
+            //memApi.StatusUpdateCallback((m) => Debug.WriteLine(m));
+            //memApi.InitMem();
+            //memApi.ReadSignature();
+
+            LightMapSequencer lightMapSequencer = new LightMapSequencer();
+            LightMapSequenceViewModel lightMapSequenceViewModel = new LightMapSequenceViewModel(81);
+            lightMapSequencer.DataContext = lightMapSequenceViewModel;
+            lightMapSequencer.ShowDialog();
         }
     }
 }
