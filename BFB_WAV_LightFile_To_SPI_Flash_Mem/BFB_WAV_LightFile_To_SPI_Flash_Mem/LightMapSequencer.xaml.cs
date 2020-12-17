@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Xceed.Wpf.Toolkit;
 
 namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
@@ -19,8 +20,10 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
     /// <summary>
     /// Interaction logic for LightMapSequencer.xaml
     /// </summary>
-    public partial class LightMapSequencer : Window
+    public partial class LightMapSequencer : Window, ICloseable
     {
+        Dispatcher _dispatcher;
+
         public LightMapSequencer()
         {
             InitializeComponent();
@@ -29,10 +32,12 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 
         private void LightMapSequencer_Loaded(object sender, RoutedEventArgs e)
         {
-            LightMapSequenceViewModel viewModel = (DataContext as LightMapSequenceViewModel);
+            _dispatcher = Dispatcher.CurrentDispatcher;
+
+            ILightMapsCollection viewModel = (DataContext as ILightMapsCollection);
             viewModel.PropertyChanged += LightMapSequencer_PropertyChanged;
 
-            for(int i = 0; i < viewModel.LightCount; i++)
+            foreach (LightToRefColor light in viewModel.SelectedLightMapLights)
             {
 
                 StackPanel sp = new StackPanel();
@@ -48,17 +53,18 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 
         private void LightMapSequencer_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            LightMapSequenceViewModel viewModel = (sender as LightMapSequenceViewModel);
+            ILightMapsCollection viewModel = (sender as ILightMapsCollection);
             int i = 0;
             foreach(LightToRefColor light in viewModel.SelectedLightMapLights)
             {
 
-
-                ((LightsWrapPanel.Children[i] as StackPanel).Children[0] as Label).Content = i.ToString();
-                ((LightsWrapPanel.Children[i] as StackPanel).Children[1] as ColorPicker).DataContext = light;
-                ((LightsWrapPanel.Children[i] as StackPanel).Children[1] as ColorPicker).SetBinding(ColorPicker.SelectedColorProperty, new Binding("Color"));
-                i++;
-
+                _dispatcher.Invoke(() =>
+                {
+                    ((LightsWrapPanel.Children[i] as StackPanel).Children[0] as Label).Content = i.ToString();
+                    ((LightsWrapPanel.Children[i] as StackPanel).Children[1] as ColorPicker).DataContext = light;
+                    ((LightsWrapPanel.Children[i] as StackPanel).Children[1] as ColorPicker).SetBinding(ColorPicker.SelectedColorProperty, new Binding("Color"));
+                    i++;
+                });
             }
         }
     }

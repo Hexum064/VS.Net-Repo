@@ -79,8 +79,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ICloseable.cs" />
+    <Compile Include="ILightMapsCollection.cs" />
     <Compile Include="LightMapSequenceViewModel.cs" />
     <Compile Include="LightToRefColor.cs" />
+    <Compile Include="MainViewModel.cs" />
+    <Compile Include="MemEntry.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="WavToBfbAudio.cs" />
     <Page Include="LightMapSequencer.xaml">

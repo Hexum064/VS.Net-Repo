@@ -15,7 +15,6 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
         //TODO: Make this an observable collection instead
 
         private List<LightMap> _lightMaps = new List<LightMap>();
-        private int _currentIndex = 0;
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
@@ -155,6 +154,17 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
                 });
 
             return bytes.ToArray();
+        }
+
+        public LightMapSequence Clone()
+        {
+            LightMapSequence newSequence = new LightMapSequence(LightCount);
+
+            newSequence._lightMaps = _lightMaps
+                .Select((map) => map.Clone())
+                .ToList();
+
+            return newSequence;
         }
 
         private void RaiseCollectionChanged(NotifyCollectionChangedAction action)

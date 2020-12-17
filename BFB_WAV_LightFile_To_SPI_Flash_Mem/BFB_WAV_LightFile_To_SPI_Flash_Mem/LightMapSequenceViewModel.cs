@@ -6,13 +6,16 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 {
-    public class LightMapSequenceViewModel : INotifyPropertyChanged
+    public class LightMapSequenceViewModel : ILightMapsCollection
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private LightMapSequence _lightMapSequence;
+        private bool _canPlay = true;
+
 
         public LightMapSequenceViewModel(ushort lightCount)
         {
@@ -20,11 +23,12 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             initCommands();
             initSequenceEventHandlers();
             SelectedLightMapIndex = 0;
+           
         }
 
         public LightMapSequenceViewModel(LightMapSequence lightMapSequence)
         {
-            _lightMapSequence = lightMapSequence;
+            _lightMapSequence = lightMapSequence.Clone();
             initCommands();
             initSequenceEventHandlers();
             SelectedLightMapIndex = 0;
@@ -161,6 +165,12 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             }
         }
 
+        public Action<LightMapSequence> SaveCallback
+        {
+            get;
+            set;
+        }
+
         private void initCommands()
         {
             AddNewCommand = new RelayCommand(addNew);
@@ -170,8 +180,8 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             SetAllLightsColorCommand = new RelayCommand(setAllLightsColor);
             ClearAllLightsColorCommand = new RelayCommand(clearAllLightsColor);
             RemoveCommand = new RelayCommand(remove);
-            SaveCommand = new RelayCommand(save);
-            CancelCommand = new RelayCommand(cancel);
+            SaveCommand = new RelayCommand((o) => save(o as ICloseable));
+            CancelCommand = new RelayCommand((o) => cancel(o as ICloseable));
             PlayCommand = new RelayCommand(play);
             StopCommand = new RelayCommand(stop);
  
@@ -237,24 +247,36 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             }
         }
 
-        private void save()
+        private void save(ICloseable closeable)
         {
-
+            closeable?.Close();
+            SaveCallback?.Invoke(_lightMapSequence);
         }
 
-        private void cancel()
+        private void cancel(ICloseable closeable)
         {
-
+            closeable?.Close();
         }
 
         private void play()
         {
+            _canPlay = true;
 
+            Task.Run(async  () =>
+            {
+                int i = SelectedLightMapIndex;
+                while (_canPlay && i < LightMapCount)
+                {
+                    SelectedLightMapIndex = i++;
+                    await Task.Delay(SelectedLightMap.HoldTime);
+                }
+
+            });
         }
 
         private void stop()
         {
-
+            _canPlay = false;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
