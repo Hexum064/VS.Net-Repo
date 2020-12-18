@@ -27,19 +27,24 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
         private Action<string> _statusCallback = null;
         private SerialPort _serialPort = null;
 
-        public BusPirateMemApi(SerialPort serialPort)
+
+
+        public BusPirateMemApi()
         {
-            _serialPort = serialPort;
+            
         }
 
-        public bool InitMem(object info = null)
+        public bool InitMem(SerialPort serialPort, object info = null)
         {
+            _serialPort = serialPort;
             resetBusPirate();
 
             if (!(setFastBaudForBusPirate() && swtichToRawSpiMode()))
             {
                 return false;
             }
+
+            updateStatus("Memory Initialized");
 
             return true;            
         }
@@ -50,7 +55,7 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             
             List<byte> data = new List<byte>(length);
 
-            if (!waitForMemBusy())
+            if (!isInitialized() || !waitForMemBusy())
             {
                 return null;
             }
@@ -79,7 +84,7 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             byte[] bytes = data.ToArray();
             int sections = bytes.Length / PAGE_SIZE;
 
-            if (!waitForMemBusy())
+            if (!isInitialized() || !waitForMemBusy())
             {
                 return false;
             }
@@ -121,7 +126,7 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 
         public bool EraseAll()
         {
-            if (!waitForMemBusy())
+            if (!isInitialized() || !waitForMemBusy())
             {
                 return false;
             }
@@ -148,9 +153,10 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 
         public IEnumerable<byte> ReadSignature()
         {
+
             byte[] sig = new byte[5];
             byte[] data;
-            if (!waitForMemBusy())
+            if (!isInitialized() || !waitForMemBusy())
             {
                 return null;
             }
@@ -198,7 +204,7 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 
         }
 
-        public void StatusUpdateCallback(Action<string> callBack)
+        public void SetStatusUpdateCallback(Action<string> callBack)
         {
             _statusCallback = callBack;
         }
@@ -221,6 +227,16 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             }
         }
 
+        private bool isInitialized()
+        {
+            if (_serialPort == null)
+            {
+                updateStatus("Mem not initialized.");
+                return false;
+            }
+
+            return true;
+        }
 
         private void updateStatus(string status)
         {

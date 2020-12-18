@@ -39,10 +39,26 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             //memApi.InitMem();
             //memApi.ReadSignature();
 
-            LightMapSequencer lightMapSequencer = new LightMapSequencer();
-            LightMapSequenceViewModel lightMapSequenceViewModel = new LightMapSequenceViewModel(81);
-            lightMapSequencer.DataContext = lightMapSequenceViewModel;
-            lightMapSequencer.ShowDialog();
+            //LightMapSequencer lightMapSequencer = new LightMapSequencer();
+            //LightMapSequenceViewModel lightMapSequenceViewModel = new LightMapSequenceViewModel(81);
+            //lightMapSequencer.DataContext = lightMapSequenceViewModel;
+            //lightMapSequencer.ShowDialog();
+
+            Loaded += (o, e) =>
+            {
+                InputLightCountWindow inputLightCountWindow = new InputLightCountWindow();
+                inputLightCountWindow.ShowDialog();
+
+                if (!inputLightCountWindow.OK)
+                {
+                    Close();
+                }
+
+                DataContext = new MainViewModel<BusPirateMemApi>(inputLightCountWindow.LightCount);
+
+            };
+
+            
         }
     }
 }
