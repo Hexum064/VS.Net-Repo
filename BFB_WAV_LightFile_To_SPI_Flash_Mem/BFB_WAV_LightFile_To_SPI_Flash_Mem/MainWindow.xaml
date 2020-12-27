@@ -29,6 +29,10 @@
                 <Label Margin="4">LightCount</Label>
                 <TextBlock Margin="4" VerticalAlignment="Center" Text="{Binding LightCount}"/>
             </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <Button Margin="4" Command="{Binding LoadCommand}">Load</Button>
+                <Button Margin="4" Command="{Binding SaveCommand}">Save</Button>
+            </StackPanel>
         </Grid>
 
         
@@ -49,6 +53,7 @@
                         <Border BorderThickness="1" BorderBrush="DarkGray">
                             <Grid >
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -82,8 +87,9 @@
 
                                 <Label Grid.Row="5" Margin="4">Byte Count</Label>
                                 <TextBlock Grid.Row="6" Margin="4" Text="{Binding ByteCount}"/>
-                                <TextBlock Grid.Row="7" Margin="4" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Text="{Binding AudioFileName}"/>
-                                <Grid Grid.Row="8">
+                                <TextBlock Grid.Row="7" Margin="4" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Text="{Binding AudioRunTime}"/>
+                                <TextBlock Grid.Row="8" Margin="4" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Text="{Binding AudioFileName}"/>
+                                <Grid Grid.Row="9">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>

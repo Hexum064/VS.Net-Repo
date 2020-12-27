@@ -25,6 +25,14 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             AddNew();
         }
 
+        public LightMapSequence(ushort lightCount, IEnumerable<byte> bytes)
+        {
+            LightCount = lightCount;
+            loadFromBytes(bytes.ToArray());
+        }
+
+
+
         public ushort LightCount { get; private set; }
 
         public IEnumerable<LightMap> LightMaps
@@ -113,13 +121,9 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
         {
             get
             {
-                int size = 0;
-
-                _lightMaps.ForEach((map) =>
-                {
-                    size += 4; //4 bytes for hold time
-                    size += 3 * map.LightCount; //3 bytes per light
-                });
+                int size = 4; //2 bytes for number of maps + 2 bytes for number of lights
+                //number of maps * (2 bytes for hold time  + 3 * number of lights for 3 bytes per light)
+                size += _lightMaps.Count * (2 + (LightCount * 3));
 
                 return size;
             }
@@ -142,12 +146,12 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
                     //first two bytes are the hold time (time before next map is loaded)
                     bytes.AddRange(BitConverter.GetBytes(map.HoldTime));
 
-                    //Now add the RGB bytes for each light
+                    //Now add the RGB (actually GRB) bytes for each light
 
                     foreach(Color color in map.Lights)
                     {
-                        bytes.Add(color.R);
                         bytes.Add(color.G);
+                        bytes.Add(color.R);
                         bytes.Add(color.B);
                     }
                         
@@ -165,6 +169,18 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
                 .ToList();
 
             return newSequence;
+        }
+
+        private void loadFromBytes(byte[] bytes)
+        {
+            ushort maps = BitConverter.ToUInt16(bytes, 0);
+            int lightMapByteCount = LightCount * 3 + 2;//+2 for hold time
+            for (ushort i = 0; i < maps; i++)
+            {
+                //4 bytes are included for the map count and light count, so we skip those 4 bytes.
+                _lightMaps.Add(new LightMap(LightCount, bytes.Skip(i * lightMapByteCount + 4).Take(lightMapByteCount + 2)));
+            }
+
         }
 
         private void RaiseCollectionChanged(NotifyCollectionChangedAction action)

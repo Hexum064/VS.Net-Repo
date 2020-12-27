@@ -13,7 +13,7 @@ namespace PB_WriteSingeFileToFlash
     {
         private const string COM_PORT = "COM3";
         private const int BAUD = 1000000;
-        private const int START_ADDR = 0x8000;
+        private const uint START_ADDR = 0x8000;
         private const int PAGE_SIZE = 256;
 
         static void Main(string[] args)
@@ -22,7 +22,7 @@ namespace PB_WriteSingeFileToFlash
             SerialPort serialPort = new SerialPort(COM_PORT);
             string fileName;
             string input;
-
+            
             InitPort(serialPort);
 
             if (SetNewBaud(serialPort) && CheckRawSpiMode(serialPort))// && VerifyMemoryId(serialPort))
@@ -102,11 +102,15 @@ namespace PB_WriteSingeFileToFlash
             int lineCount = 256;
             int byteCount = 16*lineCount;
             byte[] buff;
-            int startAddr = START_ADDR;
+            int startAddr = 92176;
+            byte[] addrBytes = new byte[3];
+            addrBytes[0] = (byte)((startAddr >> 16) & 0xFF);
+            addrBytes[1] = (byte)((startAddr >> 8) & 0xFF);
+            addrBytes[2] = (byte)((startAddr >> 0) & 0xFF);
             startAddr =  62473;
             SetCS(serialPort, true);
             serialPort.Write(new byte[] { (byte)(16 + (4 - 1)) }, 0, 1);
-            serialPort.Write(new byte[] { 0x03, (byte)((startAddr >> 16) & 0xFF), (byte)((startAddr >> 8) & 0xFF), (byte)((startAddr >> 0) & 0xFF) }, 0, 4);
+            serialPort.Write(new byte[] { 0x03, addrBytes[0], addrBytes[1], addrBytes[2] }, 0, 4);
 
             Thread.Sleep(100);
 
@@ -132,6 +136,8 @@ namespace PB_WriteSingeFileToFlash
 
         private static void PrintLineBytes(byte[] bytes)
         {
+            File.WriteAllBytes("out.bin", bytes);
+
 
             for (int j = 0; j < bytes.Length; j++)
             {
@@ -351,13 +357,12 @@ namespace PB_WriteSingeFileToFlash
 
 
             EnableMemWrite(serialPort);
-            SendBytes(serialPort, new byte[] { 0x02, 0, 0, 0, 0, 1 }); //Write the number of files to the starting address 0x000000. Only 1 in this case.
-
+            SendBytes(serialPort, new byte[] { 0x02, 0, 0, 0, 1, 0 }); //Write the number of files to the starting address 0x000000. Only 1 in this case.
+            byte[] addrBytes = BitConverter.GetBytes(START_ADDR);
             EnableMemWrite(serialPort);
             SendBytes(serialPort, new byte[] { 0x02, 0, 0, 0x2,
-                (START_ADDR >> 24) & 0xFF, (START_ADDR >> 16) & 0xFF, (START_ADDR >> 8) & 0xFF, (START_ADDR >> 0) & 0xFF,
-                (byte)((file.Length >> 24) & 0xFF), (byte)((file.Length >> 16) & 0xFF), (byte)((file.Length >> 8) & 0xFF), (byte)((file.Length >> 0) & 0xFF)}); //write starting address for file and length
-            currentAddr = START_ADDR;
+                addrBytes[0],addrBytes[1],addrBytes[2],addrBytes[3]}); //write starting address for file and length
+            currentAddr = (int)START_ADDR;
 
             byte[] buff = new byte[PAGE_SIZE];
 

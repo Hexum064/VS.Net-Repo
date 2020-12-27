@@ -79,6 +79,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Extensions.cs" />
     <Compile Include="ICloseable.cs" />
     <Compile Include="ILightMapsCollection.cs" />
     <Compile Include="InputLightCountWindow.xaml.cs">

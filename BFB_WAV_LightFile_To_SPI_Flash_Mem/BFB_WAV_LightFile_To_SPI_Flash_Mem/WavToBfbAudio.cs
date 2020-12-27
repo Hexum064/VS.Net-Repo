@@ -26,6 +26,12 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             _data = wavFileBytes;
         }
 
+        public decimal RunTime
+        {
+            get;
+            private set;
+        }
+
         public byte[] ConvertWavFileData()
         {
             List<byte> data = new List<byte>();
@@ -37,11 +43,16 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             audioData = sampleSize == 8 ? convertFrom8bit(audioData) : convertFrom16bit(audioData);
 
             data.AddRange(BitConverter.GetBytes(sampleRate));
-            data.AddRange(BitConverter.GetBytes((byte)channels));
+            data.Add((byte)channels);
             data.AddRange(BitConverter.GetBytes((uint)(audioData.Count / 2)));
             data.AddRange(audioData);
-
+            RunTime = CalcRunTime(sampleRate, channels, (uint)(audioData.Count / 2));
             return data.ToArray();
+        }
+
+        private decimal CalcRunTime(uint sampleRate, ushort channels, uint samples)
+        {
+            return Math.Round((decimal)samples / (decimal)(sampleRate * channels), 3);
         }
 
         private List<byte> convertFrom8bit(List<byte> audioData)

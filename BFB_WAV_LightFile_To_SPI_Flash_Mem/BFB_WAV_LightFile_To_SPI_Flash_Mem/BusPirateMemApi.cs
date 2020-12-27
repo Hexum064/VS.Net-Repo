@@ -89,11 +89,7 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
                 return false;
             }
 
-            if (!enableMemWrite())
-            {
-                updateStatus("Could not enable mem write.");
-                return false;
-            }
+
 
             updateStatus($"Writing {bytes.Length} byte{(bytes.Length == 1 ? "" : "s")} from 0x{address.ToString("2x")}");
 
@@ -394,6 +390,12 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
             int sections = data.Length / 16;
             byte[] addrBytes = addressToBytes24(address);
 
+            if (!enableMemWrite())
+            {
+                updateStatus("Could not enable mem write.");
+                return false;
+            }
+
             try
             {
 
@@ -421,7 +423,9 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
                     //Tell bus pirate we are sending 'leftOver' bytes (-1 because 0 = 1 byte)
                     _serialPort.Write(new byte[] { (byte)(BP_CMD_WRITE + (leftOver - 1)) }, 0, 1);
                     _serialPort.Write(getSegment(data, sections * 16, leftOver), 0, leftOver); //Send leftOver number of bytes of data
-                }         
+                }
+
+                //setChipSelect(false);
 
                 return true;
 
@@ -534,7 +538,8 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
         {
             sendBytes(new byte[] { FLASH_EN_WRITE });
 
-            Thread.Sleep(100);
+           
+            Thread.Sleep(50);
             _serialPort.ReadExisting();
 
             return isMemWriteEnabled();
