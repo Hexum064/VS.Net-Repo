@@ -8,13 +8,13 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
 {
     public static class Extensions
     {
-        public const uint STARTING_ADDRESS = 0x8000;
+        public const uint STARTING_ADDRESS = 0;//0x8000;
 
         public static List<byte> GetFat(this IEnumerable<MemEntry> memEntries)
         {
             List<byte> data = new List<byte>();
             data.AddRange(BitConverter.GetBytes((ushort)memEntries.Count()));
-            uint address = STARTING_ADDRESS;
+            uint address = 2 + (uint)(memEntries.Count() * 8); //2 for the 2-byte entry count and 8 * entries for 4+4 bytes for audio and light data addresses
             foreach (MemEntry entry in memEntries)
             {
                 

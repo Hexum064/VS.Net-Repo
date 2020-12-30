@@ -253,17 +253,20 @@ namespace BFB_WAV_LightFile_To_SPI_Flash_Mem
                     byte[] lightBytes = new byte[0];
 
                     //Add in the size of the addresses and the entry count
-                    audioAddress += fatSize;
+                    //audioAddress += fatSize;
 
                     if (lightsAddress > 0)
                     {
                         lightsAddress -= Extensions.STARTING_ADDRESS;
-                        lightsAddress += fatSize;
+                        //lightsAddress += fatSize;
                         lightBytes = getLightBytes(lightsAddress, bytes);
                     }
                     MemEntries.Add(new MemEntry(LightCount, getAudioBytes(audioAddress, bytes), lightBytes));
                    
                 }
+
+                RaisePropertyChanged(nameof(EntryCount));
+                RaisePropertyChanged(nameof(TotalByteCount));
             }
            
         }
